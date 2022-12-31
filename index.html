@@ -54,7 +54,7 @@
     webSocket.listen(function(message) {
         console.log("before", message);
 
-        var msg = JZZ.MIDI(message.Status+1, message.Data1, 127)
+        var msg = JZZ.MIDI(message.Status+1, message.Data1, message.Data2)
         console.log("after", msg);
         from_socket.emit(msg); 
     });
