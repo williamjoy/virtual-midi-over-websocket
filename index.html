@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Virtual Piano</title>
+<script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="src/jquery.simple.websocket.js"></script>
+<script src="JZZ.js"></script>
+<script src="jzz-input-kbd.js"></script>
+<script src="jzz-synth-tiny.js"></script>
+</head>
+<body>
+  <h1>Echo</h1>
+  
+  <div id=piano_out></div>
+  <div id=piano_in></div>
+  
+  <script><!--
+  JZZ.synth.Tiny.register('Web Audio');
+  var midi_in = JZZ().openMidiIn();                      // default MIDI-In (if available)
+  var midi_out = JZZ().openMidiOut();                    // default MIDI-Out
+  var piano_in = JZZ.input.Kbd({ at:'piano_in' });   // lower piano
+  var piano_out = JZZ.input.Kbd({ at:'piano_out', chan:1, active:false });
+                                                         // upper piano
+  var ascii = JZZ.input.ASCII({                          // computer keyboard
+    A:'F#4', Z:'G4', S:'G#4', X:'A4', D:'Bb4', C:'B4', V:'C5', G:'C#5', B:'D5',
+    H:'D#5', N:'E5', M:'F5', K:'F#5', '<':'G5', L:'G#5', '>':'A5', ':':'Bb5'
+  });
+  
+  var map_to_0 = JZZ.Widget({ _receive: function(msg) {  // change channel
+    this.emit(msg.setChannel(0));
+  }});
+  
+  var delay = JZZ.Widget({ _receive: function(msg) {     // delay, transpose, change channel
+    this.wait(500).emit(msg.setNote(msg.getNote() + 12).setChannel(1));
+    console.log("received msg", msg);
+  }});
+  
+  midi_in.connect(map_to_0);
+  map_to_0.connect(ascii);
+  ascii.connect(piano_in);
+  piano_in.connect(midi_out);
+  piano_in.connect(delay);
+  delay.connect(piano_out);
+  piano_out.connect(midi_out);
+  
+  --></script>
+
+  <script type="text/javascript">
+    var webSocket = $.simpleWebSocket({ url: 'ws://williams-air.lan:8080/midi' });
+
+    var from_socket = JZZ.Widget();
+    from_socket.connect(piano_out);
+    // reconnected listening
+    webSocket.listen(function(message) {
+        console.log("before", message);
+
+        var msg = JZZ.MIDI(message.Status+1, message.Data1, 127)
+        console.log("after", msg);
+        from_socket.emit(msg); 
+    });
+
+</script>
+  
+  </body>
+  </html>
