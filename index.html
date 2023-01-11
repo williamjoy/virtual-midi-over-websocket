@@ -1,37 +1,42 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Virtual Piano</title>
-<script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="src/jquery.simple.websocket.js"></script>
-<script src="JZZ.js"></script>
-<script src="jzz-input-kbd.js"></script>
-<script src="jzz-synth-tiny.js"></script>
+  <title>Virtual Piano</title>
+  <script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM="
+    crossorigin="anonymous"></script>
+  <script type="text/javascript" src="src/jquery.simple.websocket.js"></script>
+  <script src="JZZ.js"></script>
+  <script src="jzz-input-kbd.js"></script>
+  <script src="jzz-synth-tiny.js"></script>
 </head>
+
 <body>
-  <h1>Web Synthesia</h1>
-  <div id=piano_out_up></div>
-  <div id=piano_out_down></div>
+  <div id=piano_out_top    style="z-index:2;width:10%;height:10%;position:absolute;top:0;left:0;"></div>>
+  <div id=piano_out_bottom style="z-index:1;width:10%;height:10%;position:absolute;top:0;left:0;"></div>>
+  <h1 style="top: -20%;">Web Synthesia</h1>
 
   <script><!--
   JZZ.synth.Tiny.register('Web Audio');
-  //var midi_in = JZZ().openMidiIn();                      // default MIDI-In (if available)
+  //var midi_in = JZZ().openMidiIn();                    // default MIDI-In (if available)
   var midi_out = JZZ().openMidiOut();                    // default MIDI-Out
-  var piano_out_up = JZZ.input.Kbd({ at:'piano_out_up', chan:0,
+  var piano_out_top = JZZ.input.Kbd({ at:'piano_out_top', chan:0,
   from: "C2",
   to: "C8",}).and(function(){
-    this.getBlackKeys().setStyle(null, { backgroundColor:'#591'});
-    this.getWhiteKeys().setStyle(null, { backgroundColor:'#ae5'});
+         this.getKeys().setStyle({    borderColor: '#0000', borderBottomLeftRadius:'5px', borderBottomRightRadius:'5px' });
+    this.getBlackKeys().setStyle({backgroundColor: '#0000'}, { backgroundColor:'#569d11', borderColor: '#000'});
+    this.getWhiteKeys().setStyle({backgroundColor: '#fff0'}, { backgroundColor:'#a1e55c', borderColor: '#000'});
   });;
-  var piano_out_down = JZZ.input.Kbd({ at:'piano_out_down', chan:1,
+  var piano_out_bottom = JZZ.input.Kbd({ at:'piano_out_bottom', chan:1,
   from: "C2",
+  active: false,
   to: "C8",}).and(function(){
-    this.getBlackKeys().setStyle(null, { backgroundColor:'#36a'});
-    this.getWhiteKeys().setStyle(null, { backgroundColor:'#8ac'});
+    this.getKeys().setStyle({borderBottomLeftRadius:'5px', borderBottomRightRadius:'5px' });
+    this.getBlackKeys().setStyle(null, { backgroundColor:'#376bae'});
+    this.getWhiteKeys().setStyle(null, { backgroundColor:'#87aacf'});
   });
-                                                         // upper piano
-  piano_out_up.connect(midi_out);                   // upper piano
-  piano_out_down.connect(midi_out);
+  piano_out_top.connect(midi_out);
+  piano_out_bottom.connect(midi_out);
 
   --></script>
 
@@ -39,8 +44,8 @@
     var webSocket = $.simpleWebSocket({ url: 'ws://localhost:8080/midi' });
 
     var from_socket = JZZ.Widget();
-    from_socket.connect(piano_out_up);
-    from_socket.connect(piano_out_down);
+    from_socket.connect(piano_out_top);
+    from_socket.connect(piano_out_bottom);
     // reconnected listening
     webSocket.listen(function(message) {
         var lastTimestamp = message[0].Timestamp;
@@ -63,5 +68,6 @@
         }
     });
   </script>
-  </body>
-  </html>
+</body>
+
+</html>
