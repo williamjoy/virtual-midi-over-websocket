@@ -20,12 +20,14 @@
   var piano_out_up = JZZ.input.Kbd({ at:'piano_out_up', chan:0,
   from: "C2",
   to: "C8",}).and(function(){
-    this.getKeys().setStyle(null, { backgroundColor:'#0f0'});
+    this.getBlackKeys().setStyle(null, { backgroundColor:'#591'});
+    this.getWhiteKeys().setStyle(null, { backgroundColor:'#ae5'});
   });;
   var piano_out_down = JZZ.input.Kbd({ at:'piano_out_down', chan:1,
   from: "C2",
   to: "C8",}).and(function(){
-    this.getKeys().setStyle(null, { backgroundColor:'#00f'});
+    this.getBlackKeys().setStyle(null, { backgroundColor:'#36a'});
+    this.getWhiteKeys().setStyle(null, { backgroundColor:'#8ac'});
   });
                                                          // upper piano
   piano_out_up.connect(midi_out);                   // upper piano
