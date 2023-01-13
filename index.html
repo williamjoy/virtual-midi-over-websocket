@@ -12,9 +12,16 @@
 </head>
 
 <body>
-  <div id=piano_out_top    style="z-index:2;width:10%;height:10%;position:absolute;top:0;left:0;"></div>>
-  <div id=piano_out_bottom style="z-index:1;width:10%;height:10%;position:absolute;top:0;left:0;"></div>>
-  <h1 style="top: -20%;">Web Synthesia</h1>
+  <h1>Web Synthesia</h1>
+
+  <select id="ws-location" onchange="connectWebSocket()">
+    <option value="banana">Banana</option>
+    <option value="ws://localhost:8080/midi">ws://localhost:8080/midi</option>
+    <option value="orange">Orange</option>
+  </select>
+  <div id=piano_out_top style="z-index:2;width:10%;height:10%;position:absolute;top:20%;left:0;"></div>
+  <div id=piano_out_bottom style="z-index:1;width:10%;height:10%;position:absolute;top:20%;left:0;"></div>
+
 
   <script><!--
   JZZ.synth.Tiny.register('Web Audio');
@@ -23,9 +30,9 @@
   var piano_out_top = JZZ.input.Kbd({ at:'piano_out_top', chan:0,
   from: "C2",
   to: "C8",}).and(function(){
-         this.getKeys().setStyle({    borderColor: '#0000', borderBottomLeftRadius:'5px', borderBottomRightRadius:'5px' });
-    this.getBlackKeys().setStyle({backgroundColor: '#0000'}, { backgroundColor:'#569d11', borderColor: '#000'});
-    this.getWhiteKeys().setStyle({backgroundColor: '#fff0'}, { backgroundColor:'#a1e55c', borderColor: '#000'});
+         this.getKeys().setStyle({borderBottomLeftRadius:'5px', borderBottomRightRadius:'5px'});
+    this.getBlackKeys().setStyle({backgroundColor: '#0000',  borderColor: '#0000'}, { backgroundColor:'#569d11', borderColor: '#000'});
+    this.getWhiteKeys().setStyle({backgroundColor: '#fff0',  borderColor: '#0000'}, { backgroundColor:'#a1e55c', borderColor: '#000'});
   });;
   var piano_out_bottom = JZZ.input.Kbd({ at:'piano_out_bottom', chan:1,
   from: "C2",
@@ -40,33 +47,38 @@
 
   --></script>
 
-  <script type="text/javascript">
-    var webSocket = $.simpleWebSocket({ url: 'ws://localhost:8080/midi' });
+  <script>
+    var webSocket;
+    function connectWebSocket(){
+      try{webSocket.close();}catch{}
+      webSocket = $.simpleWebSocket({ url: document.getElementById("ws-location").value });
 
-    var from_socket = JZZ.Widget();
-    from_socket.connect(piano_out_top);
-    from_socket.connect(piano_out_bottom);
-    // reconnected listening
-    webSocket.listen(function(message) {
-        var lastTimestamp = message[0].Timestamp;
-        for(let i = 0; i <message.length; i++) {
-          var event = message[i];
-          var diff = event.Timestamp - lastTimestamp;
-          //if (event.Status === 145 || event.Status === 129) {
-          //  event.Status = event.Status - 1
-          //}
-          var msg = JZZ.MIDI(event.Status, event.Data1, event.Data2);
-          console.log(msg);
-          if (diff > 0) {
-            setTimeout(function() {
-            from_socket.emit(msg);
-            }, diff);
-          } else {
-            from_socket.emit(msg);
+      var from_socket = JZZ.Widget();
+      from_socket.connect(piano_out_top);
+      from_socket.connect(piano_out_bottom);
+      // reconnected listening
+      webSocket.listen(function(message) {
+          var lastTimestamp = message[0].Timestamp;
+          for(let i = 0; i <message.length; i++) {
+            var event = message[i];
+            var diff = event.Timestamp - lastTimestamp;
+            //if (event.Status === 145 || event.Status === 129) {
+            //  event.Status = event.Status - 1
+            //}
+            var msg = JZZ.MIDI(event.Status, event.Data1, event.Data2);
+            //console.log(msg);
+            if (diff > 0) {
+              setTimeout(function() {
+              from_socket.emit(msg);
+              }, diff);
+            } else {
+              from_socket.emit(msg);
+            }
+            lastTimestamp = event.Timestamp;
           }
-          lastTimestamp = event.Timestamp;
-        }
-    });
+      });
+      console.log(this.toString());
+    }
   </script>
 </body>
 
